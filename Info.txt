@@ -2,7 +2,7 @@ Situazione A: Hai lavorato su un PC e vuoi salvare tutto online (PUSH)
     Ogni volta che modifichi, aggiungi o elimini dei file, devi inviare questi aggiornamenti su GitHub:
         1. Apri la scheda Controllo del codice sorgente in VS Code.
         2. Scrivi un breve messaggio su cosa hai cambiato (es. "Aggiunto nuovo script Python").
-        3. Clicca su Commit.
+        3. Dopo aver selezionato le modifiche da aggiungere con il +, clicca su Commit.
         4. Clicca sul pulsante Sincronizza modifiche (Sync Changes) che compare al posto del tasto Publish, oppure clicca sui tre puntini ... in alto a destra 
             nel pannello e scegli Push. Questo "spinge" i dati su GitHub.
 
@@ -16,3 +16,5 @@ Situazione B: Accendi l'altro PC e vuoi riprendere il lavoro (PULL)
 
 ! La primissima volta che usi un computer nuovo, non avendo ancora la cartella, dovrai aprire VS Code, 
     aprire la "Riquadro comandi" con Ctrl+Shift+P o Cmd+Shift+P, digitare "Git: Clone", e incollare l'URL del tuo repository GitHub per scaricare tutto il blocco.
+
+    Vediamo se funziona
