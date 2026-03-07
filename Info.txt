@@ -18,3 +18,5 @@ Situazione B: Accendi l'altro PC e vuoi riprendere il lavoro (PULL)
     aprire la "Riquadro comandi" con Ctrl+Shift+P o Cmd+Shift+P, digitare "Git: Clone", e incollare l'URL del tuo repository GitHub per scaricare tutto il blocco.
 
     Vediamo se funziona
+
+    Craaaazyyyyyy funziona
