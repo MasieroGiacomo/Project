@@ -20,7 +20,7 @@ def play_video(video_path):
             continue
         cv2.imshow('frame', frame)
         #frame_bw = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
+    
         fg_mask = backSub.apply(frame)
         cv2.imshow('mask', fg_mask)
         
@@ -46,6 +46,7 @@ def play_video(video_path):
         # Stop playing when I click 'q' 
         if cv2.waitKey(1) == ord('q'):
             break
+    
     cap.release()
     cv2.destroyAllWindows()
 
