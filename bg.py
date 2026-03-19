@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 num_frame_bg = 200
 bg = []
 idx = 0
-cap = cv2.VideoCapture('videos/p3.mp4')
+cap = cv2.VideoCapture('videos/p3Bis.mp4')
 interpolation = np.median # or np.mean
 
 while(cap.isOpened() and idx < num_frame_bg):

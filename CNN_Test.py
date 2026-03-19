@@ -10,7 +10,7 @@ import tensorflow as tf
 IMG_HEIGHT = 128
 IMG_WIDTH = 64
 BATCH_SIZE = 32
-TEST_DIR = 'dataset_ritagliato/test' # Assicurati che il percorso sia corretto
+TEST_DIR = 'dataset/test' # Assicurati che il percorso sia corretto
 
 print("Caricamento del modello...")
 modello = load_model('modello_pedoni.keras')

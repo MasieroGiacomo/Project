@@ -22,17 +22,19 @@ train_dataset = image_dataset_from_directory(
 
 print("Caricamento dataset di Test/Validation...")
 val_dataset = image_dataset_from_directory(
-    'dataset/val',
+    'dataset/validation',
     image_size=(IMG_HEIGHT, IMG_WIDTH),
     batch_size=BATCH_SIZE,
     label_mode='binary'
 )
 
 def crea_modello():
-    model = Sequential(
-    [   
+    model = Sequential([   
         # Input layer.
         Input(shape=(IMG_HEIGHT, IMG_WIDTH, 3)),
+        
+        # NORMALIZZAZIONE DEI PIXEL (fondamentale!)
+        Rescaling(1./255),
 
         # Convolutions with subsequent pooling.
         Conv2D(filters = 32, kernel_size = (3, 3), activation = "relu", padding = 'same'),
@@ -41,12 +43,11 @@ def crea_modello():
         MaxPooling2D(pool_size = (2, 2)),
 
         # Classification head.
-        Dense(128, activation = "relu"),
-        Flatten(),
+        Flatten(), # <-- PRIMA appiattiamo
+        Dense(128, activation = "relu"), # <-- POI il layer denso
         Dense(1, activation = "sigmoid")
-    ]
-)
-    
+    ])
+
     # Compilazione del modello
     model.compile(optimizer='adam',
                   loss='binary_crossentropy',

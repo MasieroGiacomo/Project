@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from keras.models import load_model
 
-def searchCandidate(frame, backSub, min_area=200): # <-- min_area abbassata!
+def searchCandidate(frame, backSub, min_area=150): # <-- min_area abbassata!
     # 1. Applica MOG2 (learningRate=-1 = adattamento automatico)
     fg_mask = backSub.apply(frame, learningRate=-1)
     
@@ -18,7 +18,7 @@ def searchCandidate(frame, backSub, min_area=200): # <-- min_area abbassata!
     mask_clean = cv2.morphologyEx(mask_clean, cv2.MORPH_CLOSE, kernel_close)
     
     # (Opzionale) Se vuoi fare debug della maschera finale, scommenta la riga sotto
-    cv2.imshow('MOG2 Maschera Pulita', mask_clean)
+    # cv2.imshow('MOG2 Maschera Pulita', mask_clean)
     
     # 4. Trova i contorni
     contours, _ = cv2.findContours(mask_clean, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -35,7 +35,7 @@ def searchCandidate(frame, backSub, min_area=200): # <-- min_area abbassata!
     return bounding_boxes
 
 def main():
-    video_path = 'videos/uni5.mp4'
+    video_path = 'videos/p3.mp4'
     cap = cv2.VideoCapture(video_path)
     
     # MOG2 Tuning per pedoni lontani: varThreshold abbassata a 16
@@ -78,18 +78,26 @@ def main():
             cut_resized = cv2.resize(cut_rgb, CNN_INPUT_SIZE)
             # C) Crea il Batch (1, 128, 64, 3)
             cut_batch = np.expand_dims(cut_resized, axis=0)
+            # Aggiungi questo controllo PRIMA di chiamare la CNN
+            rapporto_forma = h / float(w)
 
+            # Se il box è più largo che alto, o è troppo largo rispetto all'altezza (es. un'auto)
+            if rapporto_forma < 1.2: 
+                # Disegnalo direttamente come Rumore/Sfondo, salta la predizione
+                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 1)
+                cv2.putText(frame, "Other (Horizontal)", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
+                continue
             # CHIAMATA ALLA CNN
             predizione = modello_pedoni.predict(cut_batch, verbose=0) # verbose=0 nasconde i log di logica in console
             
-            if predizione[0][0] > 0.5:
+            if predizione[0][0] < 0.5:
                 # E' UN UMANO (Verde)
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                cv2.putText(frame, f"Persona {predizione[0][0]*100:.0f}%", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                cv2.putText(frame, f"Person {(1- predizione[0][0])*100:.0f}%", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             else:
                 # E' SFONDO IN MOVIMENTO (Rosso - es. foglie, carrelli)
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 1)
-                cv2.putText(frame, "Rumore", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
+                cv2.putText(frame, "Other", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
 
         cv2.imshow('Tracking Pipeline', frame)
         

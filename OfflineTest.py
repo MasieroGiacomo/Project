@@ -35,7 +35,7 @@ def main():
     # --- SCELTA VIDEO E PATH ---
     vid = 1
     if vid == 0: videoP = 'videos/rilevamento-intrusioni-video.avi'
-    elif vid == 1: videoP = 'videos/p3.mp4'
+    elif vid == 1: videoP = 'videos/p3Bis.mp4'
     elif vid == 2: videoP = 'videos/amb.mp4'
     elif vid == 3: videoP = 'videos/city.mp4'
 
@@ -95,10 +95,10 @@ def main():
 
             predizione = modello_pedoni.predict(cut_batch, verbose=0)
             
-            if predizione[0][0] > 0.5:
+            if predizione[0][0] < 0.5:
                 # Disegna Box Verde per UMANO
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                cv2.putText(frame, f"Persona {predizione[0][0]*100:.0f}%", (x, max(15, y-10)), 
+                cv2.putText(frame, f"Persona {(1 - predizione[0][0])*100:.0f}%", (x, max(15, y-10)), 
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             else:
                 # Disegna Box Rosso per SFONDO
