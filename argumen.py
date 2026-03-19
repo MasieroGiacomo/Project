@@ -3,8 +3,8 @@ import cv2
 import random
 
 # --- CONFIGURAZIONI ---
-IN_DIR = "dataset_ritagliato2/train/notHuman/"
-TARGET_FINALE = 1322 
+IN_DIR = "dataset_cut/train/notHuman/"
+TARGET_FINALE = 1250 
 
 files = [f for f in os.listdir(IN_DIR) if f.endswith(('.jpg', '.png'))]
 num_originali = len(files)

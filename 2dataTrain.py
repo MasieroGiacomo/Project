@@ -4,11 +4,11 @@ import random
 import xml.etree.ElementTree as ET
 
 # --- CONFIGURAZIONI INIZIALI ---
-IMG_DIR = "archive/test/JPEGImages"       
-LABEL_DIR = "archive/test/Annotations"     
+IMG_DIR = "archive/Train/JPEGImages"       
+LABEL_DIR = "archive/Train/Annotations"     
 
-OUT_DIR_UMANI = "dataset_ritagliato2/test/human/"
-OUT_DIR_SFONDO = "dataset_ritagliato2/test/notHuman/"
+OUT_DIR_UMANI = "dataset_cut/train/human/"
+OUT_DIR_SFONDO = "dataset_cut/train/notHuman/"
 
 TARGET_W = 64
 TARGET_H = 128
