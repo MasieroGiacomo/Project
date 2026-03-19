@@ -57,14 +57,14 @@ def two_frame_difference(frame, previous_frame, distance=l1_distance, th=5):
     display_image_and_mask_cv(frame,mask)
 
 # Assigning to variable distance a distance function. Change this variable to test other distance functions
-distance = mahalanobis_distance
+distance = l1_distance
 
 # Defining a threshold
 threshold = 60
 
 # Loading video
 idx = 0
-cap = cv2.VideoCapture('store.mp4')
+cap = cv2.VideoCapture('videos\park3.mp4')
 
 # Computing a TFD over frames
 while(cap.isOpened()):
