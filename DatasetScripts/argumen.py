@@ -3,8 +3,8 @@ import cv2
 import random
 
 # --- CONFIGURAZIONI ---
-IN_DIR = "dataset/train/notHuman/"
-TARGET_FINALE = 1250 
+IN_DIR = "dataset/train/Human/"
+TARGET_FINALE = 3345 
 
 files = [f for f in os.listdir(IN_DIR) if f.endswith(('.jpg', '.png'))]
 num_originali = len(files)
@@ -26,7 +26,7 @@ else:
 
         if img is not None:
             # Scegliamo l'operazione da fare alternandole (0, 1, 2)
-            operazione = count_generati % 3
+            operazione = count_generati % 2
 
             if operazione == 0:
                 # 1. Flip Orizzontale (Destra-Sinistra)
@@ -41,13 +41,6 @@ else:
                 # convertScaleAbs applica la formula: pixel_nuovo = pixel_vecchio * alpha
                 img_aug = cv2.convertScaleAbs(img, alpha=alpha, beta=0)
                 prefisso = f"contrast_"
-                
-            else:
-                # 3. Flip Verticale (Alto-Basso)
-                # Se preferisci NON usare il flip verticale, puoi cambiare questo blocco 
-                # per fare, ad esempio, un cambio di luminosità (beta=... invece di alpha)
-                img_aug = cv2.flip(img, 0)
-                prefisso = "flipV_"
 
             # Salviamo la nuova immagine
             nuovo_nome = f"{prefisso}{count_generati}_{filename}"

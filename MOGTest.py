@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from keras.models import load_model
 
-def searchCandidate(frame, backSub, min_area=150): # <-- min_area abbassata!
+def searchCandidate(frame, backSub, min_area=150): 
     # 1. Applica MOG2 (learningRate=-1 = adattamento automatico)
     fg_mask = backSub.apply(frame, learningRate=-1)
     
@@ -18,7 +18,7 @@ def searchCandidate(frame, backSub, min_area=150): # <-- min_area abbassata!
     mask_clean = cv2.morphologyEx(mask_clean, cv2.MORPH_CLOSE, kernel_close)
     
     # (Opzionale) Se vuoi fare debug della maschera finale, scommenta la riga sotto
-    # cv2.imshow('MOG2 Maschera Pulita', mask_clean)
+    cv2.imshow('MOG2 Maschera Pulita', mask_clean)
     
     # 4. Trova i contorni
     contours, _ = cv2.findContours(mask_clean, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -35,7 +35,7 @@ def searchCandidate(frame, backSub, min_area=150): # <-- min_area abbassata!
     return bounding_boxes
 
 def main():
-    video_path = 'videos/p3.mp4'
+    video_path = 'videos/parking.mp4'
     cap = cv2.VideoCapture(video_path)
     
     # MOG2 Tuning per pedoni lontani: varThreshold abbassata a 16

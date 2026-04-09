@@ -4,15 +4,15 @@ import random
 import xml.etree.ElementTree as ET
 
 # --- CONFIGURAZIONI INIZIALI ---
-IMG_DIR = "archive/Train/JPEGImages"       
-LABEL_DIR = "archive/Train/Annotations"     
+IMG_DIR = "archive2/Train/JPEGImages"       
+LABEL_DIR = "archive2/Train/Annotations"     
 
-OUT_DIR_UMANI = "dataset/train/human/"
-OUT_DIR_SFONDO = "dataset/train/notHuman/"
+OUT_DIR_UMANI = "dataset2/train/human/"
+OUT_DIR_SFONDO = "dataset2/train/notHuman/"
 
 TARGET_W = 64
 TARGET_H = 128
-MARGIN_SICUREZZA = 20 # Pixel di "cuscinetto" attorno alle persone per evitare di tagliare braccia/gambe
+MARGIN_SICUREZZA = 40 # Pixel di "cuscinetto" attorno alle persone per evitare di tagliare braccia/gambe
 
 os.makedirs(OUT_DIR_UMANI, exist_ok=True)
 os.makedirs(OUT_DIR_SFONDO, exist_ok=True)
@@ -82,7 +82,7 @@ for filename in os.listdir(IMG_DIR):
                 continue
                 
             ritaglio_resized = cv2.resize(ritaglio, (TARGET_W, TARGET_H))
-            salvataggio_path = os.path.join(OUT_DIR_UMANI, f"human_{count_umani}.jpg")
+            salvataggio_path = os.path.join(OUT_DIR_UMANI, f"human2_{count_umani}.jpg")
             cv2.imwrite(salvataggio_path, ritaglio_resized)
             count_umani += 1
             umani_estratti_qui += 1
@@ -124,7 +124,7 @@ for filename in os.listdir(IMG_DIR):
             
             if ritaglio_sfondo.size > 0:
                 ritaglio_sfondo_resized = cv2.resize(ritaglio_sfondo, (TARGET_W, TARGET_H))
-                salvataggio_sfondo_path = os.path.join(OUT_DIR_SFONDO, f"notHuman_{count_sfondo}.jpg")
+                salvataggio_sfondo_path = os.path.join(OUT_DIR_SFONDO, f"notHuman2_{count_sfondo}.jpg")
                 cv2.imwrite(salvataggio_sfondo_path, ritaglio_sfondo_resized)
                 count_sfondo += 1
                 sfondi_estratti += 1

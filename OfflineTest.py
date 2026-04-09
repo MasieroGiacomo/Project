@@ -4,7 +4,7 @@ from keras.models import load_model
 import func
 
 # --- FUNZIONE DI RICERCA BLOB CON BACKGROUND STATICO (L2) ---
-def find_blobs_static_bg(frame, bg_float, threshold=55, min_area=200):
+def find_blobs_static_bg(frame, bg_float, threshold, min_area):
     # 1. Calcolo distanza L2 usando la tua funzione
     frame_float = frame.astype(float)
     dist = func.l2_distance(frame_float, bg_float)
@@ -33,11 +33,7 @@ def find_blobs_static_bg(frame, bg_float, threshold=55, min_area=200):
 
 def main():
     # --- SCELTA VIDEO E PATH ---
-    vid = 1
-    if vid == 0: videoP = 'videos/rilevamento-intrusioni-video.avi'
-    elif vid == 1: videoP = 'videos/p3Bis.mp4'
-    elif vid == 2: videoP = 'videos/amb.mp4'
-    elif vid == 3: videoP = 'videos/city.mp4'
+    videoP = 'videos/parking.mp4'
 
     print(f"Inizializzazione elaborazione offline per: {videoP}")
 
@@ -78,7 +74,7 @@ def main():
         frame_corrente += 1
         
         # Estrazione Blob
-        boxes = find_blobs_static_bg(frame, bg_float, threshold=55, min_area=200)
+        boxes = find_blobs_static_bg(frame, bg_float, threshold=55, min_area=150)
         
         # Classificazione e Disegno
         for (x, y, w, h) in boxes:
