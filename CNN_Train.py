@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import warnings
+import cv2
 import os
 from keras.optimizers import Adam
-from keras.losses import SparseCategoricalCrossentropy
+from keras.losses import BinaryCrossentropy
 from keras import Sequential
 from keras.layers import Input, Rescaling, Conv2D, MaxPooling2D, Dense, Flatten
 from keras.utils import image_dataset_from_directory
@@ -21,8 +22,9 @@ IMG_WIDTH = 64
 BATCH_SIZE = 32
 EPOCHS = 10
 opt = Adam(learning_rate = 1e-3)
-loss_fcn = SparseCategoricalCrossentropy()
-model_type = 0      # 0 = custom CNN, 1 = AlexNet
+loss_fcn = BinaryCrossentropy()
+model_type = 'custom'       # custom CNN, 
+#model_type = 'alex'         # AlexNet
 
 
 print("Loading training data...")
@@ -44,7 +46,7 @@ val_dataset = image_dataset_from_directory(
 print(f"The images are in the range [{np.min(val_dataset)},{np.max(val_dataset)}].")
 
 def create_model():
-    if model_type == 0:                 ## CUSTOM CNN
+    if model_type == 'custom':               
         model = Sequential([   
             # Input layer
             Input(shape=(IMG_HEIGHT, IMG_WIDTH, 3)),
@@ -64,7 +66,7 @@ def create_model():
             Dense(1, activation = "sigmoid")
         ])
 
-    elif model_type == 1:               ## ALEXNET-STYLE CNN
+    elif model_type == 'alex':            
         model = Sequential([   
             # Input layer
             Input(shape=(IMG_HEIGHT, IMG_WIDTH, 3)),
@@ -88,8 +90,8 @@ def create_model():
             Dense(1, activation = "sigmoid")
         ])
 
-    model.compile(optimizer=opt,
-                  loss=loss_fcn,
+    model.compile(loss=loss_fcn,
+                  optimizer=opt,
                   metrics=['accuracy'])
     return model
 
@@ -104,7 +106,11 @@ history = model.fit(            # For plotting
 )
 
 ## SAVING THE MODEL
-model.save('Results/pedestrians.keras')
+if model_type == 'custom':
+    model.save('Results/pedestrians_custom.keras')
+elif model_type == 'alex':       
+    model.save('Results/pedestrians_alex.keras')
+
 print("Training completed and model saved!")
 
 def plot_results(history):
@@ -133,6 +139,18 @@ def plot_results(history):
     plt.legend()
     plt.grid(True)
     
+    plt.savefig('Results/training_plot.png')
     plt.show()
 
 plot_results(history)
+
+## FROM LAB 6
+plt.figure(figsize=(20, 3))
+for i, metric in enumerate(["accuracy", "loss"]):
+    plt.subplot(1, 2, i + 1) 
+    plt.plot(model.history.history[metric])
+    plt.plot(model.history.history["val_" + metric])
+    plt.title("Model {}".format(metric))
+    plt.xlabel("epochs")
+    plt.ylabel(metric)
+    plt.legend(["train", "val"])

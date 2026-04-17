@@ -2,13 +2,12 @@ import numpy as np
 import cv2      
 from matplotlib import pyplot as plt
 
-
-## BACKGROUND INITIALIZATION
-path = 'videos/attraversamento.mp4'
+# -------
+# INITIALIZATION
+# -------   
+path = 'videos/parking.mp4'
 num_frame_bg = 200
 interpolation = 1   # 0 -> mean, 1 -> median
-
-### ------------------------------- ###
 bg = []
 idx = 0
 cap = cv2.VideoCapture(path)
@@ -16,7 +15,8 @@ cap = cv2.VideoCapture(path)
 while(cap.isOpened() and idx < num_frame_bg):
     ret, frame = cap.read()
     if ret and not frame is None:
-        frame = frame.astype(float)
+        frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        frame = frame_gray.astype(float)
         # Getting all first n images
         bg.append(frame)
         idx += 1
@@ -30,17 +30,12 @@ if interpolation == 0:
 elif interpolation == 1:
     bg_interpolated = np.median(bg_interpolated, axis=0)
 
-#bg_interpolated_g = cv2.cvtColor(bg_interpolated, cv2.COLOR_BGR2GRAY)
-
-#plt.title("Background")
-#plt.imshow(cv2.cvtColor(bg_interpolated.astype(np.uint8), cv2.COLOR_BGR2RGB))
-#plt.show()
-#plt.imshow(bg_interpolated_g, cmap='gray', vmin=0, vmax=255)
-#plt.show()
+plt.title("Background")
+plt.imshow(bg_interpolated, cmap='gray', vmin=0, vmax=255)
+plt.show()
 
 # Convert the array to an image 
 bg_image_to_save = bg_interpolated.astype(np.uint8)
-##bg_image_to_save = bg_interpolated_g.astype(np.uint8)
 
 # Save the image
 cv2.imwrite("Results/back.png", bg_image_to_save)
