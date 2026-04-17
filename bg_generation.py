@@ -4,9 +4,9 @@ from matplotlib import pyplot as plt
 
 
 ## BACKGROUND INITIALIZATION
-path = 'videos/parking.mp4'
+path = 'videos/attraversamento.mp4'
 num_frame_bg = 200
-interpolation = 0   # 0 -> mean, 1 -> median
+interpolation = 1   # 0 -> mean, 1 -> median
 
 ### ------------------------------- ###
 bg = []
@@ -29,16 +29,21 @@ if interpolation == 0:
     bg_interpolated = np.mean(bg_interpolated, axis=0)
 elif interpolation == 1:
     bg_interpolated = np.median(bg_interpolated, axis=0)
-    
-plt.title("Background")
-plt.imshow(cv2.cvtColor(bg_interpolated.astype(np.uint8), cv2.COLOR_BGR2RGB))
-plt.show()
+
+#bg_interpolated_g = cv2.cvtColor(bg_interpolated, cv2.COLOR_BGR2GRAY)
+
+#plt.title("Background")
+#plt.imshow(cv2.cvtColor(bg_interpolated.astype(np.uint8), cv2.COLOR_BGR2RGB))
+#plt.show()
+#plt.imshow(bg_interpolated_g, cmap='gray', vmin=0, vmax=255)
+#plt.show()
 
 # Convert the array to an image 
 bg_image_to_save = bg_interpolated.astype(np.uint8)
+##bg_image_to_save = bg_interpolated_g.astype(np.uint8)
 
 # Save the image
-cv2.imwrite("back.png", bg_image_to_save)
+cv2.imwrite("Results/back.png", bg_image_to_save)
 print("Background was saved as 'back.png'!")
 
 cap.release()

@@ -51,5 +51,5 @@ def play_video(video_path):
     cv2.destroyAllWindows()
 
 
-play_video('store.mp4')
+play_video('videos/attraversamento.mp4')
 

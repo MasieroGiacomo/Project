@@ -1,36 +1,34 @@
-import cv2
 import numpy as np
+import cv2
 from keras.models import load_model
+import func
 
-def searchCandidate(frame, backSub, min_area=150): 
-    # 1. Applica MOG2 (learningRate=-1 = adattamento automatico)
-    fg_mask = backSub.apply(frame, learningRate=-1)
+def find_blobs_static_bg(frame, bg_float, threshold, min_area):
+    # 1. Calcolo distanza L2 usando la tua funzione
+    frame_float = frame.astype(float)
+    dist = func.l2_distance(frame_float, bg_float)
     
-    # 2. Elimina le ombre (MOG2 colora le ombre di grigio 127, noi teniamo solo il bianco 255)
-    _, mask_thresh = cv2.threshold(fg_mask, 254, 255, cv2.THRESH_BINARY)
+    # 2. Creazione Maschera Binaria (0 o 255)
+    mask_thresh = (dist > threshold).astype(np.uint8) * 255
     
-    # 3. Pulizia Morfologica "Soft" per non cancellare pedoni lontani
-    kernel_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3)) # kernel più piccolo
-    mask_clean = cv2.morphologyEx(mask_thresh, cv2.MORPH_OPEN, kernel_open)
-    
-    # NOVITA': Una Chiusura per unire i pixel dello stesso pedone (braccia, gambe)
+    # 3. Operazioni Morfologiche per pulire il rumore e unire le persone
     kernel_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
-    mask_clean = cv2.morphologyEx(mask_clean, cv2.MORPH_CLOSE, kernel_close)
+    mask_clean = cv2.morphologyEx(mask_thresh, cv2.MORPH_CLOSE, kernel_close)
     
-    # (Opzionale) Se vuoi fare debug della maschera finale, scommenta la riga sotto
-    cv2.imshow('MOG2 Maschera Pulita', mask_clean)
-    
-    # 4. Trova i contorni
+    kernel_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    mask_clean = cv2.morphologyEx(mask_clean, cv2.MORPH_OPEN, kernel_open)
+
+    cv2.imshow('Maschera Pulita', mask_clean)
+
+    # 4. Ricerca dei Contorni
     contours, _ = cv2.findContours(mask_clean, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     bounding_boxes = []
-    
-    # 5. Filtra per area
     for cnt in contours:
         area = cv2.contourArea(cnt)
         if area > min_area: 
             x, y, w, h = cv2.boundingRect(cnt)
-            bounding_boxes.append((x, y, w, h))
+            bounding_boxes.append((x, y, w, h+5))
             
     return bounding_boxes
 
@@ -38,12 +36,14 @@ def main():
     video_path = 'videos/parking.mp4'
     cap = cv2.VideoCapture(video_path)
     
-    # MOG2 Tuning per pedoni lontani: varThreshold abbassata a 16
-    backSub = cv2.createBackgroundSubtractorMOG2(history=500, varThreshold=16, detectShadows=True)
+    background = cv2.imread("Results/back.png", cv2.IMREAD_GRAYSCALE)
+    if background is None:
+        raise ValueError("ERRORE: Immagine 'back.png' non trovata!")
+    bg_float = background.astype(float)
     
     frame_count = 0
     print("Caricamento Rete Neurale in corso...")
-    modello_pedoni = load_model('modello_pedoni.keras')
+    modello_pedoni = load_model('Results/modello_pedoni.keras')
     print("Rete pronta!")
     
     CNN_INPUT_SIZE = (64, 128) # Attenzione: per cv2.resize è (width, height)
@@ -52,13 +52,13 @@ def main():
         ret, frame = cap.read()
         if not ret:
             break
-            
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)    
         frame_count += 1
         if frame_count % 2 != 0:
             continue
             
-        # 1. Troviamo i box in movimento (MOG2)
-        boxes = searchCandidate(frame, backSub, min_area=200)
+        # 1. RICERCA BLOB
+        boxes = find_blobs_static_bg(frame, bg_float, threshold=30, min_area=150)
         
         # 2. Ritaglio e Classificazione
         for (x, y, w, h) in boxes:
@@ -87,6 +87,7 @@ def main():
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 1)
                 cv2.putText(frame, "Other (Horizontal)", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
                 continue
+
             # CHIAMATA ALLA CNN
             predizione = modello_pedoni.predict(cut_batch, verbose=0) # verbose=0 nasconde i log di logica in console
             
@@ -110,3 +111,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

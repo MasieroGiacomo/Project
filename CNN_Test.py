@@ -6,61 +6,55 @@ from keras.models import load_model
 from keras.utils import image_dataset_from_directory
 import tensorflow as tf
 
-# --- CONFIGURAZIONI ---
+## PARAMETERS ##
 IMG_HEIGHT = 128
 IMG_WIDTH = 64
 BATCH_SIZE = 32
 TEST_DIR = 'dataset/test' 
 
-print("Caricamento del modello...")
-modello = load_model('modello_pedoni.keras')
-print("Modello caricato con successo!\n")
+print("Model loading...")
+model = load_model('Results/pedestrians.keras')
 
-# 1. CARICAMENTO DEL DATASET DI TEST
-# REGOLA D'ORO: shuffle=False è obbligatorio per non mischiare l'ordine delle foto
-# rispetto alle loro etichette originali durante la valutazione.
-print("Caricamento immagini di test...")
+### 1. LOADING OF TEST DATASET
+print("Loading test images...")
 test_dataset = image_dataset_from_directory(
     TEST_DIR,
     image_size=(IMG_HEIGHT, IMG_WIDTH),
     batch_size=BATCH_SIZE,
     label_mode='binary',
-    shuffle=False 
+    shuffle=False               # To preserve the order of files and labels for correct evaluation
 )
 
-nomi_classi = test_dataset.class_names # Dovrebbe essere ['sfondo', 'umani']
-print(f"Classi trovate: {nomi_classi}\n")
+classes = test_dataset.class_names 
+print(f"Classes found: {classes}\n")
 
-# 2. ESTRAZIONE DELLE ETICHETTE VERE E DELLE PREDIZIONI
-print("Calcolo delle predizioni su tutto il dataset di test. Attendere...")
-# predict() sputa fuori i numeri da 0.0 a 1.0
-predizioni_prob = modello.predict(test_dataset)
+### 2. LABELS EXTRACTION AND PREDICTIONS
+print("Testing...")
+prediction_prob = model.predict(test_dataset)     # predict() gives numbers from 0.0 to 1.0
 
-# Trasformiamo le probabilità in classi (0 o 1) con soglia 0.5
-y_pred = (predizioni_prob > 0.5).astype(int).flatten()
+# From probabilities to classes 
+y_pred = (prediction_prob > 0.5).astype(int).flatten()
 
-# Estraiamo le etichette "vere" (ground truth) dal dataset
+# Getting real labels (y_true) from the dataset
 y_true = np.concatenate([y for x, y in test_dataset], axis=0).astype(int).flatten()
 
-# 3. METRICHE E CLASSIFICATION REPORT
+### 3. REPORT 
 print("\n" + "="*50)
-print("REPORT DI CLASSIFICAZIONE (PRECISION & RECALL)")
+print("PRECISION & RECALL")
 print("="*50)
-print(classification_report(y_true, y_pred, target_names=nomi_classi))
+print(classification_report(y_true, y_pred, target_names=classes))
 
-# 4. CREAZIONE DELLA MATRICE DI CONFUSIONE
+### 4.CONFUSION MATRIX
 cm = confusion_matrix(y_true, y_pred)
 
 plt.figure(figsize=(8, 6))
-# Usiamo Seaborn per disegnare una heatmap bella e professionale
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=nomi_classi, yticklabels=nomi_classi)
-plt.title('Matrice di Confusione del Modello', fontsize=16, fontweight='bold')
-plt.xlabel('Predizione della Rete (Quello che ha detto il PC)', fontsize=12)
-plt.ylabel('Classe Vera (Quello che era davvero)', fontsize=12)
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=classes, yticklabels=classes)
+plt.title('Confusion Matrix', fontsize=16, fontweight='bold')
+plt.xlabel('Model Prediction', fontsize=12)
+plt.ylabel('True Class', fontsize=12)
 plt.show()
 
-# 5. VISUALIZZAZIONE DI ALCUNI ERRORI (EXTRA DA INGEGNERE)
-# È sempre utile vedere "ad occhio" su quali immagini la rete si è confusa
+'''# 5. VISUALIZZAZIONE DI ALCUNI ERRORI (EXTRA DA INGEGNERE)
 errori_idx = np.where(y_pred != y_true)[0]
 
 if len(errori_idx) > 0:
@@ -93,4 +87,4 @@ if len(errori_idx) > 0:
     plt.tight_layout()
     plt.show()
 else:
-    print("\nIncredibile! La rete non ha commesso NESSUN ERRORE sul test set!")
+    print("\nIncredibile! La rete non ha commesso NESSUN ERRORE sul test set!")'''

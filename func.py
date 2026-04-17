@@ -37,6 +37,35 @@ def max_distance(img1, img2):
     cv2.imshow('TFD: Maschera e Immagine', combined)
 '''
 
+def find_blobs_static_bg(frame, bg_float, threshold, min_area, k_cl, k_op):
+    # 1. Calcolo distanza L2 usando la tua funzione
+    frame_float = frame.astype(float)
+    dist = l2_distance(frame_float, bg_float)
+    
+    # 2. Creazione Maschera Binaria (0 o 255)
+    mask_thresh = (dist > threshold).astype(np.uint8) * 255
+    
+    # 3. Operazioni Morfologiche per pulire il rumore e unire le persone
+    kernel_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_cl, k_cl))
+    mask_clean = cv2.morphologyEx(mask_thresh, cv2.MORPH_CLOSE, kernel_close)
+    
+    kernel_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_op, k_op))
+    mask_clean = cv2.morphologyEx(mask_clean, cv2.MORPH_OPEN, kernel_open)
+
+    cv2.imshow('Maschera Pulita', mask_clean)
+
+    # 4. Ricerca dei Contorni
+    contours, _ = cv2.findContours(mask_clean, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    bounding_boxes = []
+    for cnt in contours:
+        area = cv2.contourArea(cnt)
+        if area > min_area: 
+            x, y, w, h = cv2.boundingRect(cnt)
+            bounding_boxes.append((x, y, w, h+5))
+            
+    return bounding_boxes
+
 def display_image_and_mask_cv(img, mask):
     # 1. Convertiamo subito la maschera (True/False) in 0/255 (Grigio)
     mask_visual = (mask.astype(np.uint8) * 255)  
