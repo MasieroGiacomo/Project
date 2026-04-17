@@ -25,11 +25,11 @@ def main():
     
     # To save in mp4
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    tracking_video = cv2.VideoWriter('Results/Tracking_resultt.mp4', fourcc, fps, (width, height))
-    blob_video = cv2.VideoWriter('Results/Blob_resultt.mp4', fourcc, fps, (width, height))
+    tracking_video = cv2.VideoWriter('Results/Tracking_result.mp4', fourcc, fps, (width, height))
+    blob_video = cv2.VideoWriter('Results/Blob_result.mp4', fourcc, fps, (width, height))
 
     ## 1. BACKGROUND INITIALIZATION ##
-    background = cv2.imread("Results/back.png", cv2.IMREAD_GRAYSCALE)
+    background = cv2.imread("Results/background.png", cv2.IMREAD_GRAYSCALE)
     if background is None:
         raise ValueError("Couldn't find the background")
     cv2.imshow('Background', background)

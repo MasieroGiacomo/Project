@@ -38,7 +38,7 @@ plt.show()
 bg_image_to_save = bg_interpolated.astype(np.uint8)
 
 # Save the image
-cv2.imwrite("Results/back.png", bg_image_to_save)
+cv2.imwrite("Results/background.png", bg_image_to_save)
 print("Background was saved as 'back.png'!")
 
 cap.release()
