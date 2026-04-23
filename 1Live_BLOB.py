@@ -13,12 +13,14 @@ def main():
     k_op = 3
     k_dil = 3
     CNN_INPUT_SIZE = (64, 128)          # (width, height)
-
-    ## INITIALIZATIONS ##
+    model_type = 'Models/transfer_vgg.keras'
+    
+    # ================================================ #
+    ### 1. INITIALIZATIONS
     frame_count = 0
     cap = cv2.VideoCapture(video_path)
     
-    ## BACKGROUND INITIALIZATION ##
+    ### 1b. BACKGROUND INITIALIZATION 
     background = cv2.imread("Results/back.png", cv2.IMREAD_GRAYSCALE)
     if background is None:
         raise ValueError("Couldn't find the background")
@@ -26,12 +28,13 @@ def main():
     # Convert background to float for calculations
     bg_float = background.astype(float)
     
-    ## LOAD OF THE CNN ##
+    ### 1c. LOAD OF THE CNN
     print("Loading CNN...")
-    myModel = load_model('Results/pedestrians_alex.keras')
+    myModel = load_model(model_type)
     print("CNN ready!")
     
-
+    # ================================================ #
+    ### 2. VIDEO PROCESSING
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -41,9 +44,8 @@ def main():
         # if frame_count % 2 != 0:
         #     continue
 
-        # -------
-        # 1. BLOB DETECTION
-        # -------   
+        # -------------------------------------------- #
+        ## A. BLOB DETECTION    
 
         # Copy of the original frame for the CNN and visualization
         frame_colored = frame.copy()
@@ -69,20 +71,17 @@ def main():
         closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, kernel_close, iterations=5)
         dilated = cv2.dilate(closed, kernel_dilate)
 
-        # -------
-        # 2. CONTOURS (BLOB) DETECTION
-        # -------  
+        # Detection of the contours 
         contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
-        # -------
-        # 3. CLASSIFICATION WITH CNN
-        # -------  
+        # -------------------------------------------- #
+        ## B. CLASSIFICATION WITH CNN
         for cnt in contours:
             area = cv2.contourArea(cnt)
             if area > min_area: 
                 x, y, w, h = cv2.boundingRect(cnt)
                 
-                # A. Cut the detected blob from the original frame (colored)
+                # Cut the detected blob from the original frame (colored)
                 y_start, y_end = max(0, y), min(frame_colored.shape[0], y + h)
                 x_start, x_end = max(0, x), min(frame_colored.shape[1], x + w)
                 cut = frame_colored[y_start:y_end, x_start:x_end]
@@ -90,7 +89,7 @@ def main():
                 if cut.size == 0:
                     continue
                     
-                # B. Size-based filtering 
+                # Size-based filtering 
                 ratio = h / float(w)
                 if ratio < 1.2: 
                     # Skip the predicion and annotate as "Other"
@@ -98,34 +97,33 @@ def main():
                     cv2.putText(frame_colored, "Other (Horizontal)", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
                     continue
 
-                # C. Pre-processing for the CNN: resize and convert to RGB
+                # Pre-processing for the CNN: resize and convert to RGB
                 cut_rgb = cv2.cvtColor(cut, cv2.COLOR_BGR2RGB)
                 cut_resized = cv2.resize(cut_rgb, CNN_INPUT_SIZE)
                 # The model expects a batch dimension (1, height, width, channels)
                 cut_batch = np.expand_dims(cut_resized, axis=0)     
 
-                # D. Prediction with the CNN
+                # Prediction with the CNN
                 pred = myModel.predict(cut_batch, verbose=0) 
                 
-                # E. Annotations
-                if pred[0][0] < 0.5:
-                    # Human (green)
+                # Annotations
+                if pred[0][0] < 0.5:    # Human (green)
                     cv2.rectangle(frame_colored, (x, y), (x+w, y+h), (0, 255, 0), 2)
                     cv2.putText(frame_colored, f"Person {(1 - pred[0][0])*100:.0f}%", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                else:
-                    # Other (red)
+                else:                   # Other (red)
                     cv2.rectangle(frame_colored, (x, y), (x+w, y+h), (0, 0, 255), 1)
                     cv2.putText(frame_colored, "Other", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
-
-        # -------
-        # 4. VISUALIZATION AND CLOSING
-        # -------  
+        
+        # -------------------------------------------- #
+        ## C. VISUALIZATION
         cv2.imshow('Mask', dilated)
         cv2.imshow('Frame with Detections', frame_colored) 
         
         if cv2.waitKey(30) & 0xFF == ord('q'):
             break
 
+    # ================================================ #
+    ### 3. CLOSING
     cap.release()
     cv2.destroyAllWindows()
 

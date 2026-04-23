@@ -1,21 +1,36 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import warnings
+import os
 import seaborn as sns
 from sklearn.metrics import confusion_matrix, classification_report
 from keras.models import load_model
 from keras.utils import image_dataset_from_directory
-import tensorflow as tf
+
+# Less messages in the terminal
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+warnings.filterwarnings("ignore")
 
 ## PARAMETERS ##
 IMG_HEIGHT = 128
 IMG_WIDTH = 64
 BATCH_SIZE = 32
 TEST_DIR = 'dataset/test' 
+model_type = 'vgg'       # 'steve' -> custom CNN, 'alex' -> AlexNet-like, 'vgg' -> VGG-like 
 
+
+# ================================================ #
+### 1. LOADING OF MODEL AND TEST DATASET
+
+if model_type == 'steve':
+    model = load_model('Models/pedestrians_steve.keras')
+elif model_type == 'alex':       
+    model = load_model('Models/pedestrians_alex.keras')
+elif model_type == 'vgg':
+    model = load_model('Models/transfer_vgg.keras')
 print("Model loading...")
-model = load_model('Results/pedestrians.keras')
 
-### 1. LOADING OF TEST DATASET
 print("Loading test images...")
 test_dataset = image_dataset_from_directory(
     TEST_DIR,
@@ -28,6 +43,7 @@ test_dataset = image_dataset_from_directory(
 classes = test_dataset.class_names 
 print(f"Classes found: {classes}\n")
 
+# ================================================ #
 ### 2. LABELS EXTRACTION AND PREDICTIONS
 print("Testing...")
 prediction_prob = model.predict(test_dataset)     # predict() gives numbers from 0.0 to 1.0
@@ -38,13 +54,14 @@ y_pred = (prediction_prob > 0.5).astype(int).flatten()
 # Getting real labels (y_true) from the dataset
 y_true = np.concatenate([y for x, y in test_dataset], axis=0).astype(int).flatten()
 
+# ================================================ #
 ### 3. REPORT 
 print("\n" + "="*50)
 print("PRECISION & RECALL")
 print("="*50)
 print(classification_report(y_true, y_pred, target_names=classes))
 
-### 4.CONFUSION MATRIX
+# Confusion Matrix
 cm = confusion_matrix(y_true, y_pred)
 
 plt.figure(figsize=(8, 6))
@@ -52,6 +69,13 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=classes, yticklab
 plt.title('Confusion Matrix', fontsize=16, fontweight='bold')
 plt.xlabel('Model Prediction', fontsize=12)
 plt.ylabel('True Class', fontsize=12)
+
+if model_type == 'steve':
+        plt.savefig('Results/test_plot_steve.png')
+elif model_type == 'alex':       
+        plt.savefig('Results/test_plot_alexpng')
+elif model_type == 'vgg':
+        plt.savefig('Results/test_plot_vgg.png')
 plt.show()
 
 '''# 5. VISUALIZZAZIONE DI ALCUNI ERRORI (EXTRA DA INGEGNERE)

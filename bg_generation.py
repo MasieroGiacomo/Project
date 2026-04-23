@@ -2,9 +2,8 @@ import numpy as np
 import cv2      
 from matplotlib import pyplot as plt
 
-# -------
-# INITIALIZATION
-# -------   
+
+# Initializations 
 path = 'videos/parking.mp4'
 num_frame_bg = 200
 interpolation = 1   # 0 -> mean, 1 -> median
