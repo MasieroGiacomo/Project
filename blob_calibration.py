@@ -1,10 +1,9 @@
 import numpy as np
 import cv2
-import func
 
 def main():
     ### PARAMETERS 
-    video_path = 'videos/attraversamento.mp4'
+    video_path = 'videos/p3.mp4'
     threshold = 30
     min_area = 170
     k_cl = 9
@@ -17,9 +16,9 @@ def main():
     frame_count = 0
 
     ### 1b. BACKGROUND INITIALIZATION
-    background = cv2.imread("back.png", cv2.IMREAD_GRAYSCALE)
+    background = cv2.imread("Results/back.png", cv2.IMREAD_GRAYSCALE)
     if background is None:
-        raise ValueError("ERRORE: Immagine 'back.png' non trovata!")
+        raise ValueError("Couldn't find the background")
     bg_float = background.astype(float)
 
     # ================================================ #
@@ -33,12 +32,14 @@ def main():
 
         # Copy of the original frame for visualization
         frame_display = frame.copy()
+
         # Convert to grayscale and float for distance calculation
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)   
         frame_float = frame.astype(float) 
         
         # Compute the L2 distance between current frame and background 
-        diff = func.l2_distance(frame_float, bg_float) 
+        # diff = func.l2_distance(frame_float, bg_float) 
+        diff = np.abs(frame_float - bg_float)
         # Threshold (obtain a boolean mask)
         mask = diff > threshold
 
@@ -57,7 +58,7 @@ def main():
         # Dilation
         dilated = cv2.dilate(closed, kernel_dilate)
 
-        # Detection of the contoursS
+        # Detection of the contours
         contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
         # Drwaing bounding boxes around the detected blobs
@@ -71,8 +72,8 @@ def main():
                 cv2.rectangle(frame_display, (x, y), (x+w, y+h+5), (0, 255, 0), 2)
 
         # Visualization
-        cv2.imshow('Maschera Pulita', dilated)
-        cv2.imshow('Rilevamenti', frame_display) # Mostra anche l'originale con i box
+        cv2.imshow('Mask after morphologic operations', dilated)
+        cv2.imshow('Blobs', frame_display)
         
         if cv2.waitKey(30) & 0xFF == ord('q'):
             break
@@ -84,4 +85,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

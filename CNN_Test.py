@@ -1,7 +1,8 @@
+import os
+os.environ["KERAS_BACKEND"] = "torch"
 import matplotlib.pyplot as plt
 import numpy as np
 import warnings
-import os
 import seaborn as sns
 from sklearn.metrics import confusion_matrix, classification_report
 from keras.models import load_model
@@ -16,24 +17,22 @@ warnings.filterwarnings("ignore")
 IMG_HEIGHT = 128
 IMG_WIDTH = 64
 BATCH_SIZE = 32
-TEST_DIR = 'dataset/test' 
-model_type = 'vgg'       # 'steve' -> custom CNN, 'alex' -> AlexNet-like, 'vgg' -> VGG-like 
-
+model_type = 'steve'      
 
 # ================================================ #
 ### 1. LOADING OF MODEL AND TEST DATASET
 
 if model_type == 'steve':
-    model = load_model('Models/pedestrians_steve.keras')
+    model = load_model('Models/steve.keras')
 elif model_type == 'alex':       
-    model = load_model('Models/pedestrians_alex.keras')
+    model = load_model('Models/alex.keras')
 elif model_type == 'vgg':
-    model = load_model('Models/transfer_vgg.keras')
+    model = load_model('Models/vgg.keras')
 print("Model loading...")
 
 print("Loading test images...")
 test_dataset = image_dataset_from_directory(
-    TEST_DIR,
+    'dataset/test' ,
     image_size=(IMG_HEIGHT, IMG_WIDTH),
     batch_size=BATCH_SIZE,
     label_mode='binary',

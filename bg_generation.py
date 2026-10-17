@@ -4,14 +4,15 @@ from matplotlib import pyplot as plt
 
 
 # Initializations 
-path = 'videos/parking.mp4'
-num_frame_bg = 200
+path = 'videos/wall.mp4'
+save_path = 'Results/background1.png'
+n_frames = 100
 interpolation = 1   # 0 -> mean, 1 -> median
 bg = []
 idx = 0
 cap = cv2.VideoCapture(path)
 
-while(cap.isOpened() and idx < num_frame_bg):
+while(cap.isOpened() and idx < n_frames):
     ret, frame = cap.read()
     if ret and not frame is None:
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -37,8 +38,8 @@ plt.show()
 bg_image_to_save = bg_interpolated.astype(np.uint8)
 
 # Save the image
-cv2.imwrite("Results/background.png", bg_image_to_save)
-print("Background was saved as 'back.png'!")
+cv2.imwrite(save_path, bg_image_to_save)
+print(f"Background was saved in {save_path}!")
 
 cap.release()
 cv2.destroyAllWindows()

@@ -1,12 +1,14 @@
+import os
+os.environ["KERAS_BACKEND"] = "torch"
 import matplotlib.pyplot as plt
 import numpy as np
 import warnings
-import os
 from keras.optimizers import Adam
 from keras.losses import BinaryCrossentropy
 from keras import Sequential
 from keras.layers import Input, Rescaling, Conv2D, MaxPooling2D, Dense, Flatten, Dropout
 from keras.utils import image_dataset_from_directory
+from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 # Less messages in the terminal
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
@@ -20,17 +22,17 @@ BATCH_SIZE = 32
 EPOCHS = 20
 opt = Adam(learning_rate = 1e-3)
 loss_fcn = BinaryCrossentropy()
-model_type = 'vgg'       # 'steve' -> custom CNN, 'alex' -> AlexNet-like, 'vgg' -> VGG-like 
+model_type = 'alex' 
 
 if model_type == 'steve':
-    model_path = 'Models/pedestrians_steve.keras'
+    model_path = 'Models/steve.keras'
     save_path = 'Results/training_plot_steve.png'       
 elif model_type == 'alex':
-    model_path = 'Models/pedestrians_alex2.keras' 
+    model_path = 'Models/alex.keras' 
     save_path = 'Results/training_plot_alex.png'    
 elif model_type == 'vgg':
-    model_path = 'Models/pedestrians_vgg2.keras'
-    save_path = 'Results/training_plot_vgg2.png'
+    model_path = 'Models/vgg.keras'
+    save_path = 'Results/training_plot_vgg.png'
 
 
 # ================================================ #
@@ -143,19 +145,30 @@ model = create_model()
 model.summary() 
 
 print("Training...")
+checkpoint = ModelCheckpoint(   # For saving the best model (min validation error)
+    filepath=model_path,
+    monitor='val_loss',
+    mode='min',
+    save_best_only=True,
+    verbose=1
+)
+early_stop = EarlyStopping(     # Stop after 5 epochs without validation loss improvements
+    monitor='val_loss',
+    patience=5,
+    restore_best_weights=True
+)
+
 history = model.fit(            # For plotting
     train_dataset,
     validation_data=val_dataset,
-    epochs=EPOCHS
+    epochs=EPOCHS,
+    callbacks=[checkpoint, early_stop]
 )
 
-# ================================================ #
-### 3. MODEL SAVING
-model.save(model_path)
 print("Training completed and model saved!")
 
 # ================================================ #
-### 4. REPORT
+### 3. REPORT
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
 loss = history.history['loss']
@@ -164,33 +177,20 @@ val_loss = history.history['val_loss']
 epoch = range(1, len(acc) + 1)
     
 plt.figure(figsize=(12, 5))
-    
 # Accuracy
 plt.subplot(1, 2, 1)
 plt.plot(epoch, acc, 'b', label='Training Accuracy')
 plt.plot(epoch, val_acc, 'r', label='Validation Accuracy')
-plt.title('Accuracy di Training e Validation')
+plt.title('Training and Validation Accuracy')
 plt.legend()
 plt.grid(True)
-    
 # Loss 
 plt.subplot(1, 2, 2)
 plt.plot(epoch, loss, 'b', label='Training Loss')
 plt.plot(epoch, val_loss, 'r', label='Validation Loss')
-plt.title('Loss di Training e Validation')
+plt.title('Training and Validation Loss')
 plt.legend()
 plt.grid(True)
     
 plt.savefig(save_path)
 plt.show()
-
-'''## FROM LAB 6
-plt.figure(figsize=(20, 3))
-for i, metric in enumerate(["accuracy", "loss"]):
-    plt.subplot(1, 2, i + 1) 
-    plt.plot(model.history.history[metric])
-    plt.plot(model.history.history["val_" + metric])
-    plt.title("Model {}".format(metric))
-    plt.xlabel("epochs")
-    plt.ylabel(metric)
-    plt.legend(["train", "val"])'''

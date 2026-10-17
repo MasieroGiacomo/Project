@@ -1,30 +1,39 @@
+import os
+os.environ["KERAS_BACKEND"] = "torch"
 import numpy as np
 import cv2
 from keras.models import load_model
-import func
 
 def main():
 
     ## PARAMETERS ##
-    video_path = 'videos/parking.mp4'
+    video_path = 'videos/wall.mp4'
     threshold = 30
     min_area = 170
     k_cl = 9
     k_op = 3
     k_dil = 3
     CNN_INPUT_SIZE = (64, 128)          # (width, height)
-    model_type = 'Models/transfer_vgg.keras'
+    model_type = 'Models/steve.keras'
     
     # ================================================ #
     ### 1. INITIALIZATIONS
     frame_count = 0
     cap = cv2.VideoCapture(video_path)
+    vid_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    vid_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    disp_w = 350                                # larghezza desiderata della finestra
+    disp_h = int(disp_w * vid_h / vid_w)        # altezza che mantiene le proporzioni
     
+    for name in ['Mask', 'Frame with Detections']:
+        cv2.namedWindow(name, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
+        cv2.resizeWindow(name, disp_w, disp_h)
+
     ### 1b. BACKGROUND INITIALIZATION 
-    background = cv2.imread("Results/back.png", cv2.IMREAD_GRAYSCALE)
+    background = cv2.imread("Results/background1.png", cv2.IMREAD_GRAYSCALE)
     if background is None:
         raise ValueError("Couldn't find the background")
-    cv2.imshow('Background', background)
+    # cv2.imshow('Background', background)
     # Convert background to float for calculations
     bg_float = background.astype(float)
     
@@ -55,7 +64,7 @@ def main():
         frame_float = frame_gray.astype(float) 
 
         # Compute the L2 distance between current frame and background   
-        diff = func.l2_distance(frame_float, bg_float) 
+        diff =  np.abs(frame_float - bg_float)
         # Threshold (obtain a boolean mask)
         mask = diff > threshold
 

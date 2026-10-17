@@ -1,19 +1,21 @@
+import os
+os.environ["KERAS_BACKEND"] = "torch"
 import numpy as np
 import cv2
 from keras.models import load_model
-import func
+
 
 def main():
 
     ## PARAMETERS ##
-    video_path = 'videos/parking.mp4'
+    video_path = 'videos/wall.mp4'
     threshold = 30
     min_area = 170
     k_cl = 9
     k_op = 3
     k_dil = 3
     CNN_INPUT_SIZE = (64, 128)          # (width, height)
-    model_type = 'Models/pedestrians_vgg.keras'
+    model_type = 'Models/steve.keras'
 
     # ================================================ #
     ### 1. INITIALIZATIONS
@@ -28,14 +30,14 @@ def main():
     
     # To save in mp4
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    tracking_video = cv2.VideoWriter('Output/Tracking_result_vgg.mp4', fourcc, fps, (width, height))
+    tracking_video = cv2.VideoWriter('Output/Tracking_result_steve.mp4', fourcc, fps, (width, height))
     blob_video = cv2.VideoWriter('Output/Blob_result.mp4', fourcc, fps, (width, height))
 
     ### 1b. BACKGROUND INITIALIZATION 
-    background = cv2.imread("Results/back.png", cv2.IMREAD_GRAYSCALE)
+    background = cv2.imread("Results/background1.png", cv2.IMREAD_GRAYSCALE)
     if background is None:
         raise ValueError("Couldn't find the background")
-    cv2.imshow('Background', background)
+    # cv2.imshow('Background', background)
     # Convert background to float for calculations
     bg_float = background.astype(float)
     
@@ -63,7 +65,7 @@ def main():
         frame_float = frame_gray.astype(float) 
 
         # Compute the L2 distance between current frame and background   
-        diff = func.l2_distance(frame_float, bg_float) 
+        diff =  np.abs(frame_float - bg_float)
         # Threshold (obtain a boolean mask)
         mask = diff > threshold
 
