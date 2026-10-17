@@ -1,5 +1,4 @@
 Output/*.mp4
-videos/fix2.mp4
-videos/p3.mp4
-videos/
-dataset/
+videos/__pycache__/
+Output/
+*.pyc
